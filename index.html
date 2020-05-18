@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+        <!-- <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script> -->
+
+        <script type="text/javascript">
+            var playerRows = [];
+            $(document).ready(function() {
+                $('tbody').sortable();
+                $.get("https://api.overwatchleague.com/players/", function(data) {
+                    data.content.forEach(player => {
+                        //console.log(player.name, player.attributes.role == "offense" ? "dps" : player.attributes.role, player.teams[0].team.name);
+                        var playerRow = {name: player.name, role: player.attributes.role == "offense" ? "dps" : player.attributes.role, team: player.teams[0].team.name};
+                        playerRows.push(playerRow);
+                    });
+                    console.log(playerRows);
+                    //console.log(data.content);
+                });
+            });
+        </script>
+
+    </head>
+    <body>
+        <nav class="navbar navbar-light bg-light">
+            <a class="navbar-brand">OWL Player Rank</a>
+            <form class="form-inline">
+              <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"/>
+              <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+        </nav>
+        <div class="container">
+            <div class="card">
+                <div class="card-header">
+                    Rankings
+                </div>
+                <table class="table table-striped card-table">
+                    <thead>
+                        <th>
+                            Player
+                        </th>
+                        <th>
+                            Team
+                        </th>
+                        <th>
+                            Role(s)
+                        </th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>
