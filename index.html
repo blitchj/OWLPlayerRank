@@ -19,9 +19,29 @@
                         playerRows.push(playerRow);
                     });
                     console.log(playerRows);
+                    renderAll();
                     //console.log(data.content);
                 });
             });
+        </script>
+
+        <script>
+            function renderAll() {
+                playerRows.forEach(player => {
+                    $("#player-rank").find('tbody')
+                        .append($('<tr>')
+                            .append($('<td>')
+                                .text(player.name)
+                            )
+                            .append($('<td>')
+                                .text(player.role)
+                            )
+                            .append($('<td>')
+                                .text(player.team)
+                            )
+                        );
+                });
+            }
         </script>
 
     </head>
@@ -38,7 +58,7 @@
                 <div class="card-header">
                     Rankings
                 </div>
-                <table class="table table-striped card-table">
+                <table class="table table-striped card-table" id="player-rank">
                     <thead>
                         <th>
                             Player
