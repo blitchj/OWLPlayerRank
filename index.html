@@ -1,35 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <style>
+            tbody tr:hover {
+                background-color:lightgrey;
+            }
+            .tier-break {
+                background-color:gray;
+            }
+            #myInput {
+                padding: 20px;
+                margin-top: -6px;
+                border: 0;
+                border-radius: 0;
+                background: #f1f1f1;
+            }
+
+
+            .select2-selection__rendered {
+                line-height: 31px !important;
+            }
+            .select2-container .select2-selection--single {
+                height: 35px !important;
+            }
+            .select2-selection__arrow {
+                height: 34px !important;
+            }
+
+
+        </style>
         <meta charset="utf-8"/>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-        
+
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+        
         <!-- <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script> -->
 
         <script type="text/javascript">
             var playerRows = [];
+            var listPlayers = [];
             $(document).ready(function() {
                 $('tbody').sortable();
-                $.get("https://api.overwatchleague.com/players/", function(data) {
-                    data.content.forEach(player => {
+                $.get("https://api.overwatchleague.com/players",{expand: 'stats'}, function(data) {
+                    data.forEach(player => {
                         //console.log(player.name, player.attributes.role == "offense" ? "dps" : player.attributes.role, player.teams[0].team.name);
-                        var playerRow = {name: player.name, role: player.attributes.role == "offense" ? "dps" : player.attributes.role, team: player.teams[0].team.name};
+                        var playerRow = {name: player.name, role: player.attributes.role == "offense" ? "dps" : player.attributes.role,
+                             team: player.teams[0].team.name,
+                             img: player.headshot, logo: player.teams[0].team.logo,
+                             time: player.stats ? player.stats.stats.find(stat => stat.name == "time_played_total").value : 0};
                         playerRows.push(playerRow);
                     });
-                    console.log(playerRows);
-                    renderAll();
+
+                    playerRows.sort((a,b) => (a.time>=b.time ? -1 : 1))
+                    listAll();
+                    // console.log(playerRows);
+                    document.getElementById("rank-all").addEventListener("click", function() {clearTable(); renderAll();});
+                    document.getElementById("rank-dps").addEventListener("click", function() {clearTable(); renderDPS();});
+                    document.getElementById("rank-tanks").addEventListener("click", function() {clearTable(); renderTanks();});
+                    document.getElementById("rank-supports").addEventListener("click", function() {clearTable(); renderSupports();});
+                    document.getElementById("clear").addEventListener("click", clearTable);
+                    document.getElementById("add-tier-break").addEventListener("click", addTierBreak);
+                    // [].forEach.call(document.getElementsByClassName("close"), close => close.addEventListener("click", function() {$('#'+close.parent.parent.id+'').remove();}))
                     //console.log(data.content);
                 });
             });
         </script>
 
         <script>
-            function renderAll() {
-                playerRows.forEach(player => {
+            function clearTable() {
+                $("#player-rank").find('tbody').empty();
+            }
+        </script>
+
+        <script>
+            function removeRow(row) {
+                row.remove()
+            }
+        </script>
+
+        <script>
+            function addTierBreak() {
+                $("#player-rank").find('tbody')
+                    .prepend($('<tr class=tier-break>')
+                        .append($('<td style="padding:0;">')
+                        )
+                        .append($('<td>')
+                            .text("TIER")
+                        )
+                        .append($('<td>')
+                            .text("BREAK")
+                        )
+                        .append($('<td>')
+                                                )
+                        .append($('<td style="padding:0;">')
+                            .append('<button type="button" onClick="removeRow(this.parentNode.parentNode)" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
+                        )
+                    )
+            }
+        </script>
+
+        <script>
+            function render(players) {
+                players.forEach(player => {
                     $("#player-rank").find('tbody')
-                        .append($('<tr>')
+                        .append($('<tr id="'+player.name+player.role+'">')
+                            .append($('<td style="padding:0;">')
+                                .prepend("<img src="+player.img+" style='height:3em; margin:0;'/>")
+                            )
                             .append($('<td>')
                                 .text(player.name)
                             )
@@ -39,9 +121,50 @@
                             .append($('<td>')
                                 .text(player.team)
                             )
+                            .append($('<td style="padding:0;">')
+                                .append("<img src="+player.logo+" style='height:3em; margin:0;'/>")
+                                .append('<button type="button" class="close" onClick="removeRow('+player.name+player.role+')" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
+                            )
                         );
                 });
             }
+        </script>
+
+        <script>
+            function renderAll() {
+                render(playerRows);
+            }
+
+            function renderDPS() {
+                render(playerRows.filter(player => player.role == "dps"));
+            }
+
+            function renderTanks() {
+                render(playerRows.filter(player => player.role == "tank"));
+            }
+
+            function renderSupports() {
+                render(playerRows.filter(player => player.role == "support"));
+            }
+        </script>
+
+        <script>
+            function listAll() {
+                console.log(playerRows)
+                var players = playerRows.slice(0);
+                players.sort((a,b) => a.team >= b.team ? 1 : -1).forEach(player => $('#player-dropdown').append(('<option>'+player.name+' '+player.role+' '+player.team+'</option>')))
+            }
+        </script>
+
+        <script>
+            $(document).ready(function() {
+                $('.js-example-basic-single').select2();
+            });
+
+            $(".js-example-placeholder-single").select2({
+                placeholder: "Select a state",
+                allowClear: true
+            });
         </script>
 
     </head>
@@ -49,25 +172,53 @@
         <nav class="navbar navbar-light bg-light">
             <a class="navbar-brand">OWL Player Rank</a>
             <form class="form-inline">
-              <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"/>
-              <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                <button id="rank-all" class="btn btn-outline-success" type="button">Rank All</button>
+                <button id="rank-dps" class="btn btn-outline-success" type="button">Rank DPS</button>
+                <button id="rank-tanks" class="btn btn-outline-success" type="button">Rank Tanks</button>
+                <button id="rank-supports" class="btn btn-outline-success" type="button">Rank Supports</button>
+            </form>
+            <form class="form-inline">
+                <input class="form-control mr-sm-2" type="input" placeholder="Non-Active Player"/>
+                <button class="btn btn-outline-success my-2 my-sm-0" type=submit">Add Player</button>
+            </form>
+            <form class="form-inline" style="width:25%;">
+                <select style="width:50%;" class="js-example-basic-single form-control mr-sm-2" id="player-dropdown" name="player">
+                    <option></option>
+                </select>
+                <button class="btn btn-outline-success my-2 my-sm-0" type=submit">Include Player</button>
             </form>
         </nav>
+        <br>
         <div class="container">
             <div class="card">
                 <div class="card-header">
-                    Rankings
+                    <div class="row">
+                        <h4 contenteditable="true" class="col">Rankings</h4>
+                        <div class="col">
+                            <button id="clear" type="button" class="btn btn-dark" style="float:right;">Clear</button>
+                            <button type="button" class="btn btn-dark" style="float:right;">Export</button>
+                            <button id="add-tier-break" type="button" class="btn btn-dark" style="float:right;">Tier Break</button>
+                        </div>
+                        
+                    </div>
+                    
                 </div>
-                <table class="table table-striped card-table" id="player-rank">
+                <table class="table card-table" id="player-rank">
                     <thead>
                         <th>
+
+                        </th>
+                        <th>
                             Player
+                        </th>
+                        <th>
+                            Role
                         </th>
                         <th>
                             Team
                         </th>
                         <th>
-                            Role(s)
+
                         </th>
                     </thead>
                     <tbody>
