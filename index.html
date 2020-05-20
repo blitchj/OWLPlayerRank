@@ -8,20 +8,12 @@
             .tier-break {
                 background-color:gray;
             }
-            #myInput {
-                padding: 20px;
-                margin-top: -6px;
-                border: 0;
-                border-radius: 0;
-                background: #f1f1f1;
-            }
-
 
             .select2-selection__rendered {
                 line-height: 31px !important;
             }
             .select2-container .select2-selection--single {
-                height: 35px !important;
+                height: 38px !important;
             }
             .select2-selection__arrow {
                 height: 34px !important;
@@ -65,10 +57,33 @@
                     document.getElementById("rank-supports").addEventListener("click", function() {clearTable(); renderSupports();});
                     document.getElementById("clear").addEventListener("click", clearTable);
                     document.getElementById("add-tier-break").addEventListener("click", addTierBreak);
+                    document.getElementById("add-custom-player").addEventListener("click", addCustom);
                     // [].forEach.call(document.getElementsByClassName("close"), close => close.addEventListener("click", function() {$('#'+close.parent.parent.id+'').remove();}))
                     //console.log(data.content);
                 });
             });
+        </script>
+
+        <script>
+            function addCustom() {
+                var pname = document.getElementById("custom-player").value;
+                $("#player-rank").find('tbody')
+                    .prepend($('<tr class="custom">')
+                        .append($('<td style="padding:0;">')
+                        )
+                        .append($('<td>')
+                            .text(pname)
+                        )
+                        .append($('<td>')
+                         
+                        )
+                        .append($('<td>')
+                                                )
+                        .append($('<td style="padding:0;">')
+                            .append('<button type="button" onClick="removeRow(this.parentNode.parentNode)" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
+                        )
+                    )
+            }
         </script>
 
         <script>
@@ -110,7 +125,7 @@
                     $("#player-rank").find('tbody')
                         .append($('<tr id="'+player.name+player.role+'">')
                             .append($('<td style="padding:0;">')
-                                .prepend("<img src="+player.img+" style='height:3em; margin:0;'/>")
+                                .prepend(player.img == "" ? null : "<img src="+player.img+" style='height:3em; margin:0;'/>")
                             )
                             .append($('<td>')
                                 .text(player.name)
@@ -122,8 +137,8 @@
                                 .text(player.team)
                             )
                             .append($('<td style="padding:0;">')
-                                .append("<img src="+player.logo+" style='height:3em; margin:0;'/>")
-                                .append('<button type="button" class="close" onClick="removeRow('+player.name+player.role+')" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
+                                .append(player.logo == "" ? null : "<img src="+player.logo+" style='height:3em; margin:0;'/>")
+                                .append('<button type="button" class="close" onClick="removeRow(this.parentNode.parentNode)" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
                             )
                         );
                 });
@@ -178,14 +193,17 @@
                 <button id="rank-supports" class="btn btn-outline-success" type="button">Rank Supports</button>
             </form>
             <form class="form-inline">
-                <input class="form-control mr-sm-2" type="input" placeholder="Non-Active Player"/>
-                <button class="btn btn-outline-success my-2 my-sm-0" type=submit">Add Player</button>
+                <input id="custom-player" class="form-control mr-sm-2" type="input" placeholder="Non-Active Player"/>
+                <button id="add-custom-player" class="btn btn-outline-success my-2 my-sm-0" type="button">Add Player</button>
             </form>
             <form class="form-inline" style="width:25%;">
                 <select style="width:50%;" class="js-example-basic-single form-control mr-sm-2" id="player-dropdown" name="player">
                     <option></option>
                 </select>
-                <button class="btn btn-outline-success my-2 my-sm-0" type=submit">Include Player</button>
+                <div style="margin-left: .5em;">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="button">Include Player</button>
+                </div>
+               
             </form>
         </nav>
         <br>
