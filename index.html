@@ -35,7 +35,7 @@
 
         <script type="text/javascript">
             var playerRows = [];
-            var listPlayers = [];
+            var rankedPlayers = [];
             $(document).ready(function() {
                 $('tbody').sortable();
                 $.get("https://api.overwatchleague.com/players",{expand: 'stats'}, function(data) {
@@ -48,20 +48,29 @@
                         playerRows.push(playerRow);
                     });
 
-                    playerRows.sort((a,b) => (a.time>=b.time ? -1 : 1))
+                    playerRows.sort((a,b) => (a.time>=b.time ? 1 : -1))
                     listAll();
-                    // console.log(playerRows);
-                    document.getElementById("rank-all").addEventListener("click", function() {clearTable(); renderAll();});
-                    document.getElementById("rank-dps").addEventListener("click", function() {clearTable(); renderDPS();});
-                    document.getElementById("rank-tanks").addEventListener("click", function() {clearTable(); renderTanks();});
-                    document.getElementById("rank-supports").addEventListener("click", function() {clearTable(); renderSupports();});
+                    
+                    document.getElementById("rank-all").addEventListener("click", function() {clearTable(); renderAll(); listAll();});
+                    document.getElementById("rank-dps").addEventListener("click", function() {clearTable(); renderDPS(); listAll();});
+                    document.getElementById("rank-tanks").addEventListener("click", function() {clearTable(); renderTanks(); listAll();});
+                    document.getElementById("rank-supports").addEventListener("click", function() {clearTable(); renderSupports(); listAll();});
                     document.getElementById("clear").addEventListener("click", clearTable);
                     document.getElementById("add-tier-break").addEventListener("click", addTierBreak);
                     document.getElementById("add-custom-player").addEventListener("click", addCustom);
-                    // [].forEach.call(document.getElementsByClassName("close"), close => close.addEventListener("click", function() {$('#'+close.parent.parent.id+'').remove();}))
-                    //console.log(data.content);
+                    document.getElementById("include-player").addEventListener("click", includePlayer);
                 });
             });
+        </script>
+
+        <script>
+            function includePlayer() {
+                var value = document.getElementById("select2-player-dropdown-container").innerText;
+                var values = value.split(" ");
+                player = playerRows.find(p => p.name == values[0] && p.role == values[1] && value.includes(p.team) && p.team.includes(values[2]))
+                render([player]);
+                listAll();
+            }
         </script>
 
         <script>
@@ -89,12 +98,17 @@
         <script>
             function clearTable() {
                 $("#player-rank").find('tbody').empty();
+                rankedPlayers = [];
             }
         </script>
 
         <script>
             function removeRow(row) {
-                row.remove()
+                if ((RegExp('(dps)$|(support)$|(tank)$')).test(row.id)) {
+                    rankedPlayers = rankedPlayers.filter(player => !(row.children[1].innerText == player.name && row.children[2].innerText == player.role && row.children[3].innerText == player.team));
+                }
+                row.remove();
+                listAll();
             }
         </script>
 
@@ -123,7 +137,7 @@
             function render(players) {
                 players.forEach(player => {
                     $("#player-rank").find('tbody')
-                        .append($('<tr id="'+player.name+player.role+'">')
+                        .prepend($('<tr id="'+player.name+player.role+'">')
                             .append($('<td style="padding:0;">')
                                 .prepend(player.img == "" ? null : "<img src="+player.img+" style='height:3em; margin:0;'/>")
                             )
@@ -141,6 +155,7 @@
                                 .append('<button type="button" class="close" onClick="removeRow(this.parentNode.parentNode)" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
                             )
                         );
+                    rankedPlayers.push(player);
                 });
             }
         </script>
@@ -165,9 +180,11 @@
 
         <script>
             function listAll() {
-                console.log(playerRows)
-                var players = playerRows.slice(0);
-                players.sort((a,b) => a.team >= b.team ? 1 : -1).forEach(player => $('#player-dropdown').append(('<option>'+player.name+' '+player.role+' '+player.team+'</option>')))
+                var players = playerRows.filter(x => !rankedPlayers.includes(x));
+                console.log(players);
+                $('#player-dropdown').empty();
+                $('#player-dropdown').append('<option><option/>');
+                players.sort((a,b) => a.team >= b.team ? 1 : -1).filter(player => player).forEach(player => $('#player-dropdown').append(('<option>'+player.name+' '+player.role+' '+player.team+'</option>')))
             }
         </script>
 
@@ -201,7 +218,7 @@
                     <option></option>
                 </select>
                 <div style="margin-left: .5em;">
-                    <button class="btn btn-outline-success my-2 my-sm-0" type="button">Include Player</button>
+                    <button id="include-player" class="btn btn-outline-success my-2 my-sm-0" type="button">Include Player</button>
                 </div>
                
             </form>
