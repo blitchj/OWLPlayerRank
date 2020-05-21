@@ -181,7 +181,7 @@
         <script>
             function listAll() {
                 var players = playerRows.filter(x => !rankedPlayers.includes(x));
-                console.log(players);
+                //console.log(players);
                 $('#player-dropdown').empty();
                 $('#player-dropdown').append('<option><option/>');
                 players.sort((a,b) => a.team >= b.team ? 1 : -1).filter(player => player).forEach(player => $('#player-dropdown').append(('<option>'+player.name+' '+player.role+' '+player.team+'</option>')))
@@ -231,7 +231,6 @@
                         <h4 contenteditable="true" class="col">Rankings</h4>
                         <div class="col">
                             <button id="clear" type="button" class="btn btn-dark" style="float:right;">Clear</button>
-                            <button type="button" class="btn btn-dark" style="float:right;">Export</button>
                             <button id="add-tier-break" type="button" class="btn btn-dark" style="float:right;">Tier Break</button>
                         </div>
                         
